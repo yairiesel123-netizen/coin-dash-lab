@@ -8,6 +8,7 @@ window.COIN_DASH = {
   droneSpeed: 105,
   droneCount: 3,
   highScoreKey: 'coinDash.highScore',
+  backgroundKey: 'coinDash.background',
   colors: { background: 0x101c31, player: 0x71e8ce, player2: 0xc792ea, coin: 0xffd166, drone: 0xff657a,
     recordBackground: 0x3b2a5c }
 };
