@@ -1,7 +1,9 @@
 # Coin Dash — Lab 3 starter
 
 Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys or WASD;
-press R to restart. This is deliberately small so you can add features during the lab.
+press P or Escape to pause/resume, R to restart, and M to mute/unmute scoring sounds.
+The neon arcade layout includes a clickable sound control. Pausing freezes movement and
+the round countdown; restarting begins a fresh round.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 
