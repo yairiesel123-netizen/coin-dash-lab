@@ -6,6 +6,8 @@ class CoinDash extends Phaser.Scene {
     const c = COIN_DASH;
     this.score = 0;
     this.finished = false;
+    this.paused = false;
+    this.physics.resume();
     this.deadline = this.time.now + c.roundSeconds * 1000;
     this.physics.world.setBounds(0, 44, c.width, c.height - 44);
     this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
@@ -27,14 +29,48 @@ class CoinDash extends Phaser.Scene {
       drone.body.setVelocity(Math.cos(angle) * c.droneSpeed, Math.sin(angle) * c.droneSpeed);
     }
     this.physics.add.overlap(this.player, this.coin, () => {
-      if (this.finished) return;
+      if (this.finished || this.paused) return;
       this.score++;
       this.placeCoin();
     });
     this.physics.add.overlap(this.player, this.drones, () => this.finish('A drone caught you!'));
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
-    this.input.keyboard.on('keydown-R', () => this.scene.restart());
+    this.pauseOverlay = this.add.container(0, 0, [
+      this.add.rectangle(c.width / 2, c.height / 2, c.width, c.height, 0x0a1120, 0.85),
+      this.add.text(c.width / 2, c.height / 2,
+        'PAUSED\nP / Esc to resume · R to restart',
+        { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 16 }
+      ).setOrigin(0.5)
+    ]).setDepth(1000).setVisible(false);
+    const togglePause = (event) => {
+      if (!event.repeat) this.togglePause();
+    };
+    const restart = (event) => {
+      if (!event.repeat) this.scene.restart();
+    };
+    this.input.keyboard.on('keydown-P', togglePause);
+    this.input.keyboard.on('keydown-ESC', togglePause);
+    this.input.keyboard.on('keydown-R', restart);
+    this.events.once('shutdown', () => {
+      this.input.keyboard.off('keydown-P', togglePause);
+      this.input.keyboard.off('keydown-ESC', togglePause);
+      this.input.keyboard.off('keydown-R', restart);
+    });
+  }
+
+  togglePause() {
+    if (this.finished) return;
+    this.paused = !this.paused;
+    if (this.paused) {
+      this.pausedAt = this.time.now;
+      this.physics.pause();
+    } else {
+      // The scene clock keeps running while physics and movement are paused.
+      this.deadline += this.time.now - this.pausedAt;
+      this.physics.resume();
+    }
+    this.pauseOverlay.setVisible(this.paused);
   }
 
   placeCoin() {
@@ -50,7 +86,7 @@ class CoinDash extends Phaser.Scene {
   }
 
   update() {
-    if (this.finished) return;
+    if (this.finished || this.paused) return;
     const dx = Number(this.cursors.right.isDown || this.keys.D.isDown)
       - Number(this.cursors.left.isDown || this.keys.A.isDown);
     const dy = Number(this.cursors.down.isDown || this.keys.S.isDown)
@@ -63,7 +99,7 @@ class CoinDash extends Phaser.Scene {
   }
 
   finish(reason) {
-    if (this.finished) return;
+    if (this.finished || this.paused) return;
     this.finished = true;
     this.physics.pause();
     const c = COIN_DASH;
