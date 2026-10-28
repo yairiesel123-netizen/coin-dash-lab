@@ -65,8 +65,27 @@ async function run() {
   check('Picker marks the chosen background', /> 3\. Deep ocean/.test(menu.pickerText.text), menu.pickerText.text);
   await press('Enter', 'Enter', 13);
   check('Enter returns to the main menu', menu.view === 'main' && menu.text.visible && !menu.pickerText.visible);
+  check('Background picker hides the character choice', (await press('b', 'KeyB', 66),
+    menu.choice.every(o => !o.visible)) && (await press('Enter', 'Enter', 13), menu.choice.every(o => o.visible)));
+  check('Menu has a YOUR CHOICE section', /YOUR CHOICE/.test(texts(menu)));
+  check('Menu offers rectangle, bird and man',
+    ['Rectangle', 'Bird', 'Man'].every(label => texts(menu).includes(label)), texts(menu));
+  check('Rectangle is chosen by default', game.registry.get('avatar') === 'rectangle');
+  await press('ArrowRight', 'ArrowRight', 39);
+  check('Right arrow picks the bird', game.registry.get('avatar') === 'bird');
+  await press('ArrowRight', 'ArrowRight', 39);
+  check('Right arrow again picks the man', game.registry.get('avatar') === 'man');
+  await press('ArrowRight', 'ArrowRight', 39);
+  check('The choice wraps around to the rectangle', game.registry.get('avatar') === 'rectangle');
+  await press('ArrowLeft', 'ArrowLeft', 37);
+  check('Left arrow wraps back to the man', game.registry.get('avatar') === 'man');
+  await press('ArrowLeft', 'ArrowLeft', 37);
+  check('Left arrow picks the bird', game.registry.get('avatar') === 'bird');
+
 
   await press('2', 'Digit2', 50);
+  check('Arrow keys do not change the character on the instructions screen',
+    (await press('ArrowRight', 'ArrowRight', 39), game.registry.get('avatar') === 'bird'));
   const help = texts(scene('Menu'));
   check('Pressing 2 shows the two-player instructions without starting', game.scene.isActive('Menu'));
   check('Instructions explain arrows for Player 1', /Player 1: arrow keys/.test(help), help);
@@ -84,6 +103,10 @@ async function run() {
   parkDrones(s);
 
   const [p1, p2] = s.players;
+  check('Both players use the chosen character',
+    s.players.every(p => p.sprite.texture.key === 'avatar-bird'));
+  check('Players keep their own colours',
+    p1.sprite.tintTopLeft === COIN_DASH.colors.player && p2.sprite.tintTopLeft === COIN_DASH.colors.player2);
   s.cursors.right.isDown = true; await frames(2);
   check('Arrow keys move Player 1 only', p1.sprite.body.velocity.x > 0 && p2.sprite.body.velocity.x === 0);
   s.cursors.right.isDown = false;
@@ -138,6 +161,8 @@ async function run() {
 
   await press('m', 'KeyM', 77);
   check('M returns to the menu', game.scene.isActive('Menu') && !game.scene.isActive('CoinDash'));
+  check('The menu remembers the chosen character', game.registry.get('avatar') === 'bird');
+  await press('ArrowRight', 'ArrowRight', 39);
 
   await press('1', 'Digit1', 49);
   s = scene('CoinDash');
@@ -145,6 +170,7 @@ async function run() {
   check('Single player round still lasts 45 seconds', Math.abs((s.deadline - s.time.now) / 1000 - 45) < 1);
   parkDrones(s);
   const solo = s.players[0];
+  check('Single player uses the newly chosen man', solo.sprite.texture.key === 'avatar-man');
   s.cursors.left.isDown = true; await frames(2);
   const arrowsWork = solo.sprite.body.velocity.x < 0;
   s.cursors.left.isDown = false; s.keys.W.isDown = true; await frames(2);
