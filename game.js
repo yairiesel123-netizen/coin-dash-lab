@@ -1,26 +1,78 @@
 /* global Phaser, COIN_DASH */
+const AVATARS = [
+  { key: 'rectangle', label: 'Rectangle' },
+  { key: 'bird', label: 'Bird' },
+  { key: 'man', label: 'Man' }
+];
+
+// Characters are drawn in white once, then tinted with each player's colour.
+function createAvatarTextures(scene) {
+  if (scene.textures.exists('avatar-rectangle')) return;
+  const dark = COIN_DASH.colors.background;
+  const g = scene.make.graphics({ x: 0, y: 0, add: false });
+  g.fillStyle(0xffffff).fillRect(0, 0, 34, 20);
+  g.generateTexture('avatar-rectangle', 34, 20).clear();
+  g.fillStyle(0xffffff).fillEllipse(15, 16, 26, 16);
+  g.fillTriangle(6, 14, 20, 14, 11, 2);
+  g.fillTriangle(27, 13, 33, 16, 27, 19);
+  g.fillStyle(dark).fillCircle(22, 13, 2);
+  g.generateTexture('avatar-bird', 34, 26).clear();
+  g.fillStyle(0xffffff).fillCircle(12, 5, 5);
+  g.lineStyle(3, 0xffffff);
+  g.lineBetween(12, 10, 12, 21);
+  g.lineBetween(3, 14, 21, 14);
+  g.lineBetween(12, 20, 5, 30);
+  g.lineBetween(12, 20, 19, 30);
+  g.generateTexture('avatar-man', 24, 31).destroy();
+}
+
 class Menu extends Phaser.Scene {
   constructor() { super('Menu'); }
 
   create() {
     const c = COIN_DASH;
     const style = { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 12 };
+    createAvatarTextures(this);
     this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
       c.colors.background, 1, 0x24334b, 0.45);
-    this.add.rectangle(c.width / 2, c.height / 2, 680, 340, 0x0a1120, 0.95);
-    this.text = this.add.text(c.width / 2, c.height / 2,
-      'COIN DASH\n\nPress 1 for single player\nPress 2 for two players', style).setOrigin(0.5);
+    this.add.rectangle(c.width / 2, c.height / 2, 680, 380, 0x0a1120, 0.95);
+    this.text = this.add.text(c.width / 2, 110, 'COIN DASH', style).setOrigin(0.5);
+    this.choice = [
+      this.add.text(c.width / 2, 160, 'YOUR CHOICE', { font: 'bold 20px monospace', color: '#ffd166' })
+        .setOrigin(0.5),
+      this.add.text(c.width / 2, 300, '\u2190 \u2192 to pick your character',
+        { font: '16px monospace', color: '#9fb0c8' }).setOrigin(0.5),
+      this.add.text(c.width / 2, 365, 'Press 1 for single player\nPress 2 for two players', style)
+        .setOrigin(0.5)
+    ];
+    this.frame = this.add.rectangle(0, 225, 120, 100).setStrokeStyle(2, c.colors.coin);
+    this.choice.push(this.frame);
+    AVATARS.forEach((avatar, i) => {
+      const x = c.width / 2 + (i - 1) * 150;
+      this.choice.push(this.add.image(x, 215, `avatar-${avatar.key}`).setTint(c.colors.player),
+        this.add.text(x, 255, avatar.label, { font: '16px monospace', color: '#ffffff' }).setOrigin(0.5));
+    });
+    this.selectAvatar(Math.max(0, AVATARS.findIndex(a => a.key === this.registry.get('avatar'))));
     this.twoPlayerHelp = false;
     this.input.keyboard.on('keydown', (event) => {
-      if (!this.twoPlayerHelp && event.key === '1') this.scene.start('CoinDash', { mode: 1 });
+      if (!this.twoPlayerHelp && event.code === 'ArrowLeft') this.selectAvatar(this.selected - 1);
+      else if (!this.twoPlayerHelp && event.code === 'ArrowRight') this.selectAvatar(this.selected + 1);
+      else if (!this.twoPlayerHelp && event.key === '1') this.scene.start('CoinDash', { mode: 1 });
       else if (!this.twoPlayerHelp && event.key === '2') this.showTwoPlayerHelp();
       else if (this.twoPlayerHelp && event.code === 'Space') this.scene.start('CoinDash', { mode: 2 });
     });
   }
 
+  selectAvatar(index) {
+    this.selected = Phaser.Math.Wrap(index, 0, AVATARS.length);
+    this.registry.set('avatar', AVATARS[this.selected].key);
+    this.frame.x = COIN_DASH.width / 2 + (this.selected - 1) * 150;
+  }
+
   showTwoPlayerHelp() {
     this.twoPlayerHelp = true;
-    this.text.setFontSize(20).setText('TWO PLAYERS\n\nPlayer 1: arrow keys\n'
+    this.choice.forEach(o => o.setVisible(false));
+    this.text.setY(COIN_DASH.height / 2).setFontSize(20).setText('TWO PLAYERS\n\nPlayer 1: arrow keys\n'
       + 'Player 2: W/S up and down, A/D left and right\n\n'
       + `Collect the most coins in ${COIN_DASH.twoPlayerSeconds} seconds.\n`
       + 'A drone knocks you out, but your coins still count!\n\nPress SPACE to start');
@@ -105,7 +157,9 @@ class CoinDash extends Phaser.Scene {
   }
 
   addPlayer(x, controls, color) {
-    const sprite = this.add.rectangle(x, COIN_DASH.height / 2, 24, 24, color);
+    createAvatarTextures(this);
+    const avatar = this.registry.get('avatar') || AVATARS[0].key;
+    const sprite = this.add.image(x, COIN_DASH.height / 2, `avatar-${avatar}`).setTint(color);
     this.physics.add.existing(sprite);
     sprite.body.setCollideWorldBounds(true);
     return { sprite, controls, score: 0, out: false };
