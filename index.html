@@ -2,15 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coin Dash — Lab 3 starter</title>
+<meta name="theme-color" content="#080d1c">
+<title>Coin Dash — Neon Arcade</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
-  <header><p>LAB 3 · STARTER GAME</p><h1>Coin Dash</h1>
-  <p>Collect yellow coins. Dodge red drones. How many can you collect in 45 seconds?</p></header>
-  <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD."></div>
-  <p>Move: <strong>arrow keys / WASD</strong> · Restart: <strong>R</strong></p>
+  <header>
+    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> NEON ARCADE / 01</p>
+    <div class="title-row"><h1>COIN<span>DASH</span></h1><span class="round-badge">45 SECOND RUN</span></div>
+    <p class="intro">Chase the gold. Dodge the drones. Make every second count.</p>
+  </header>
+  <section class="arena" aria-label="Game arena">
+    <div class="arena-bar"><span>THE GRID</span><span>COLLECT · EVADE · REPEAT</span></div>
+    <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD. P or Escape pauses; R restarts; M toggles sound."></div>
+  </section>
+  <div class="game-footer">
+    <ul class="legend" aria-label="Game objects">
+      <li><span class="marker player-marker" aria-hidden="true"></span> YOU</li>
+      <li><span class="marker coin-marker" aria-hidden="true"></span> COINS</li>
+      <li><span class="marker drone-marker" aria-hidden="true"></span> DRONES</li>
+    </ul>
+    <p class="goal">One run. As many coins as you can.</p>
+  </div>
+  <nav class="controls" aria-label="Keyboard controls">
+    <span><kbd>↑ ↓ ← →</kbd> / <kbd>WASD</kbd> Move</span>
+    <span><kbd>P</kbd> / <kbd>Esc</kbd> Pause</span>
+    <span><kbd>R</kbd> Restart</span>
+    <span><kbd>M</kbd> Sound</span>
+  </nav>
 </main>
 <script src="vendor/phaser-3.90.0.min.js"></script>
 <script src="sounds.js"></script>
