@@ -46,10 +46,25 @@ const endRound = async s => { s.deadline = s.time.now - 1; await frames(3); };
 
 async function run() {
   localStorage.removeItem(COIN_DASH.highScoreKey);
+  localStorage.removeItem(COIN_DASH.backgroundKey);
   await frames(10);
   check('Game opens on the menu', game.scene.isActive('Menu') && !game.scene.isActive('CoinDash'));
   check('Menu offers single and two players',
     /Press 1 for single player/.test(texts(scene('Menu'))) && /Press 2 for two players/.test(texts(scene('Menu'))));
+
+  check('Menu offers a background choice', /Press B to choose a background/.test(texts(scene('Menu'))));
+  check('Default background is the night grid', scene('Menu').background.name === 'grid');
+
+  await press('b', 'KeyB', 66);
+  const menu = scene('Menu');
+  check('B opens the background picker', menu.view === 'backgrounds' && menu.pickerText.visible
+    && /1\. Night grid/.test(menu.pickerText.text) && /6\. Meadow/.test(menu.pickerText.text), menu.pickerText.text);
+  await press('3', 'Digit3', 51);
+  check('A number picks a background and previews it', menu.background.name === 'ocean'
+    && localStorage.getItem(COIN_DASH.backgroundKey) === 'ocean' && game.scene.isActive('Menu'));
+  check('Picker marks the chosen background', /> 3\. Deep ocean/.test(menu.pickerText.text), menu.pickerText.text);
+  await press('Enter', 'Enter', 13);
+  check('Enter returns to the main menu', menu.view === 'main' && menu.text.visible && !menu.pickerText.visible);
 
   await press('2', 'Digit2', 50);
   const help = texts(scene('Menu'));
@@ -63,6 +78,7 @@ async function run() {
   let s = scene('CoinDash');
   check('Space starts a two-player round', game.scene.isActive('CoinDash') && s.mode === 2);
   check('Two-player round has two players', s.players.length === 2);
+  check('Round uses the chosen background', s.background.name === 'ocean', s.background.name);
   check('Two-player round lasts 60 seconds',
     Math.abs((s.deadline - s.time.now) / 1000 - 60) < 1, `${(s.deadline - s.time.now) / 1000}s`);
   parkDrones(s);
