@@ -17,3 +17,7 @@ Coordination facts: existing codex/* worktrees had unresolved Windows paths, so 
 Student observations have not been supplied. The lab-report JSON and combined pair HTML remain pending student name, laptop label, lab time window, and the second laptop export. This note is not the lab-report export.
 
 Review from a feature worktree with `git diff --stat 3b8d1e6` and `git diff 3b8d1e6`. Inspect combined history with `git log --graph --oneline --decorate --all`.
+
+Integration update: fetched partner changes and resolved game/settings/page conflicts, retaining two-player mode, records, avatars, backgrounds and our three features. M remains mute; N now returns to the menu to avoid a key collision.
+
+Post-merge verification: expanded real-browser suite passed 57 checks with zero failures, covering partner features plus pause/resume and mute.

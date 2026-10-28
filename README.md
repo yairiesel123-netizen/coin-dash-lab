@@ -1,7 +1,7 @@
 # Coin Dash — Lab 3 starter
 
 Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys or WASD;
-press P or Escape to pause/resume, R to restart, and M to mute/unmute scoring sounds.
+press P or Escape to pause/resume, R to restart, M to mute/unmute scoring sounds, and N to return to the menu.
 The neon arcade layout includes a clickable sound control. Pausing freezes movement and
 the round countdown; restarting begins a fresh round.
 
